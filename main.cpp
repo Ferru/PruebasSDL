@@ -20,7 +20,7 @@ int main(int argc, char** arcv)
     }
     else
     {
-	//Saca el surface
+	//Saca el surface	
 	screenSurface = SDL_GetWindowSurface(window);
 	surfacePrueba = loadMedia();
 	if(surfacePrueba == nullptr)
@@ -29,13 +29,27 @@ int main(int argc, char** arcv)
 	}
 	else
 	{
-	    //Llena el surface
-	    std::cout<<"Intentando lacer el blit";
-	    SDL_BlitSurface(surfacePrueba, NULL, screenSurface, NULL);
-	    //Actualiza surface
-	    SDL_UpdateWindowSurface(window);
-	    //Espera de dos segundos
-	    SDL_Delay(2000);
+	    //Main loog flag
+	    bool quit = false;
+	    //Manejador de eventos
+	    SDL_Event e;
+	    //Mientras no se cierre la aplicación
+	    while(!quit)
+	    {
+		//Manejando eventos de la cola
+		while(SDL_PollEvent(&e) != 0)
+		{
+		    //Se detecta el evento de cierre
+		    if(e.type == SDL_QUIT)
+		    {
+			quit = true;
+		    }
+		}
+		//Llena el surface
+		SDL_BlitSurface(surfacePrueba, NULL, screenSurface, NULL);
+		//Actualiza surface
+		SDL_UpdateWindowSurface(window);
+	    }
 	}
 	SDL_FreeSurface(surfacePrueba);
 	close(window);
