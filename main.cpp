@@ -2,17 +2,32 @@
 #include <iostream>
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
+enum KeyPressSurfaces
+{
+    KEY_PRESS_SURFACE_DEFAULT,
+    KEY_PRESS_SURFACE_UP,
+    KEY_PRESS_SURFACE_DOWN,
+    KEY_PRESS_SURFACE_LEFT,
+    KEY_PRESS_SURFACE_RIGHT,
+    KEY_PRESS_SURFACE_TOTAL
+};
 //Inicia SDL y crea una ventana
 SDL_Window* init();
 //Carga los medios
-SDL_Surface* loadMedia();
+bool loadMedia(SDL_Surface** surfaces);
 //Libera memoria y recursos, además de apagar SDL
 void close(SDL_Window *win);
+//CArga individualmente una imagen
+SDL_Surface* loadSurface(std::string path);
 int main(int argc, char** arcv)
 {
+    //Surface de la ventana
     SDL_Surface* screenSurface = nullptr;
-    SDL_Surface* surfacePrueba = nullptr;
+    //Surface actual 
+    SDL_Surface* currentSurface = nullptr;
     SDL_Window* window = nullptr;
+    //LAs imagenes correspondientes a las teclas
+    SDL_Surface* keyPresSurfaces[KEY_PRESS_SURFACE_TOTAL];
     window = init();
     if(window == nullptr)
     {
@@ -22,8 +37,8 @@ int main(int argc, char** arcv)
     {
 	//Saca el surface	
 	screenSurface = SDL_GetWindowSurface(window);
-	surfacePrueba = loadMedia();
-	if(surfacePrueba == nullptr)
+	bool test = loadMedia(keyPresSurfaces);
+	if(!test)
 	{
 	    return 1;
 	}
@@ -33,6 +48,8 @@ int main(int argc, char** arcv)
 	    bool quit = false;
 	    //Manejador de eventos
 	    SDL_Event e;
+	    //Surface por defecto
+	    currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_DEFAULT];
 	    //Mientras no se cierre la aplicación
 	    while(!quit)
 	    {
@@ -44,14 +61,41 @@ int main(int argc, char** arcv)
 		    {
 			quit = true;
 		    }
+		    else if(e.type == SDL_KEYDOWN)
+		    {
+			switch(e.key.keysym.sym)
+			{
+			case SDLK_UP:
+			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_UP];
+			break;
+			case SDLK_DOWN:
+			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_DOWN];
+			break;
+			case SDLK_LEFT:
+			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_LEFT];
+			break;
+			case SDLK_RIGHT:
+			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_RIGHT];
+			break;
+			default:
+			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_DEFAULT];
+			break;
+			}
+		    }
 		}
 		//Llena el surface
-		SDL_BlitSurface(surfacePrueba, NULL, screenSurface, NULL);
+		SDL_BlitSurface(currentSurface, NULL, screenSurface, NULL);
 		//Actualiza surface
 		SDL_UpdateWindowSurface(window);
 	    }
 	}
-	SDL_FreeSurface(surfacePrueba);
+	//SDL_FreeSurface(currentSurface);
+	int j = 0;
+	while(j < KEY_PRESS_SURFACE_TOTAL)
+	{
+	    SDL_FreeSurface(keyPresSurfaces[j]);
+	    j++;
+	}
 	close(window);
 	return 0;
     }
@@ -82,24 +126,62 @@ SDL_Window* init()
 	
     }
 }
-SDL_Surface* loadMedia()
+//Se cargan todas las imagenes
+bool loadMedia(SDL_Surface** surfaces)
 {
-    //Respuesta que se va a devolver
-    SDL_Surface* resp = nullptr;
-    resp = SDL_LoadBMP("images/hello.bmp");
-    if(resp == nullptr)
+    //Se carga surface por defecto
+    bool success =  true;
+    surfaces[KEY_PRESS_SURFACE_DEFAULT] = loadSurface("images/press.bmp");
+    if(surfaces[KEY_PRESS_SURFACE_DEFAULT] == nullptr)
     {
-	std::cout<<"No se puede cargar la imagen, SDL_Error: " << SDL_GetError()<<std::endl;
-	return nullptr;
+	std::cout<<"No se puede cargar la imagen por defecto" <<std::endl;
+	success = false;
     }
-    else
+    //Cargando images para tecla arriba
+    surfaces[KEY_PRESS_SURFACE_UP] = loadSurface("images/up.bmp");
+    if(surfaces[KEY_PRESS_SURFACE_UP] == nullptr)
     {
-	return resp;
+	std::cout<<"No se puede cargar la imagen para tecla arriba " <<std::endl;
+	success = false;
+    }    
+    //Cargando imagen para tecla abajo
+    surfaces[KEY_PRESS_SURFACE_DOWN] = loadSurface("images/down.bmp");
+    if(surfaces[KEY_PRESS_SURFACE_DOWN] == nullptr)
+    {
+	std::cout<<"No se puede cargar la imagen para tecla abajo " <<std::endl;
+	success = false;
     }
+    //Imagen para la izquierda
+    surfaces[KEY_PRESS_SURFACE_LEFT] = loadSurface("images/left.bmp");
+    if(surfaces[KEY_PRESS_SURFACE_LEFT] == nullptr)
+    {
+	std::cout<<"No se puede cargar la imagen para tecla izquierda " <<std::endl;
+	success = false;
+    }
+    //CArgando imagen para la derecha
+    surfaces[KEY_PRESS_SURFACE_RIGHT] = loadSurface("images/right.bmp");
+    if(surfaces[KEY_PRESS_SURFACE_RIGHT] == nullptr)
+    {
+	std::cout<<"No se puede cargar la imagen por derecha" <<std::endl;
+	success = false;
+    }
+    std::cout<<"Se han creado los surfaces? "<< success<<std::endl; 
+    return success;
 }
 void close(SDL_Window* win)
 {
     SDL_DestroyWindow(win);
     win = nullptr;
     SDL_Quit();
+}
+SDL_Surface* loadSurface(std::string path)
+{
+    //Carga el surface del path especificado
+    SDL_Surface* loadedSurface = nullptr;
+    loadedSurface = SDL_LoadBMP(path.c_str());
+    if(loadedSurface == nullptr)
+    {
+	std::cout<<"Incapaz de abrir la imagen " << path <<" SDL Error " << SDL_GetError() << std::endl;
+    }
+    return loadedSurface;
 }
