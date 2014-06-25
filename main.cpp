@@ -90,7 +90,7 @@ int main(int argc, char** arcv)
 		stretchRect.y = 0;
 		stretchRect.w = SCREEN_WIDTH;
 		stretchRect.h = SCREEN_HEIGHT;
-		SDL_BlitSurface(currentSurface, NULL, screenSurface, &stretchRect);
+		SDL_BlitScaled(currentSurface, NULL, screenSurface, &stretchRect);
 		//Actualiza surface
 		SDL_UpdateWindowSurface(window);
 	    }
