@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <SDL2/SDL_image.h>
+#include <string>
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 enum KeyPressSurfaces
@@ -61,27 +63,7 @@ int main(int argc, char** arcv)
 		    {
 			quit = true;
 		    }
-		    else if(e.type == SDL_KEYDOWN)
-		    {
-			switch(e.key.keysym.sym)
-			{
-			case SDLK_UP:
-			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_UP];
-			break;
-			case SDLK_DOWN:
-			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_DOWN];
-			break;
-			case SDLK_LEFT:
-			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_LEFT];
-			break;
-			case SDLK_RIGHT:
-			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_RIGHT];
-			break;
-			default:
-			currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_DEFAULT];
-			break;
-			}
-		    }
+		   
 		}
 		//Llena el surface
 		//Stretching the surface
@@ -127,9 +109,18 @@ SDL_Window* init()
 	}
 	else
 	{
-	    return resp;
-	}
-	
+	    //Inicializa el SDL_image
+	    int initFlags = IMG_INIT_PNG;
+	    if( !(IMG_Init(initFlags) & initFlags))
+	    {
+		std::cout<<"No se pudo cargar SDL_image, SDL_Error: " << IMG_GetError() << std::endl;
+		return nullptr;
+	    }
+	    else
+	    {
+		return resp;
+	    }
+	}	
     }
 }
 //Se cargan todas las imagenes
@@ -137,7 +128,7 @@ bool loadMedia(SDL_Surface** surfaces, SDL_Surface* screenSurface)
 {
     //Se carga surface por defecto
     bool success =  true;
-    surfaces[KEY_PRESS_SURFACE_DEFAULT] = loadSurface("images/press.bmp", screenSurface);
+    surfaces[KEY_PRESS_SURFACE_DEFAULT] = loadSurface("images/preview.png", screenSurface);
     if(surfaces[KEY_PRESS_SURFACE_DEFAULT] == nullptr)
     {
 	std::cout<<"No se puede cargar la imagen por defecto" <<std::endl;
@@ -187,10 +178,10 @@ SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface)
     SDL_Surface* optimizedSurface = nullptr;
     //Carga el surface del path especificado
     SDL_Surface* loadedSurface = nullptr;
-    loadedSurface = SDL_LoadBMP(path.c_str());
+    loadedSurface = IMG_Load(path.c_str());
     if(loadedSurface == nullptr)
     {
-	std::cout<<"Incapaz de abrir la imagen " << path <<" SDL Error " << SDL_GetError() << std::endl;
+	std::cout<<"Incapaz de abrir la imagen " << path <<" SDL Error " << IMG_GetError() << std::endl;
     }
     else
     {
