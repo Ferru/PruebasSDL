@@ -14,34 +14,31 @@ enum KeyPressSurfaces
     KEY_PRESS_SURFACE_TOTAL
 };
 //Inicia SDL y crea una ventana
-SDL_Window* init();
+bool init(SDL_Window** win, SDL_Renderer** ren);
 //Carga los medios
-bool loadMedia(SDL_Surface** surfaces, SDL_Surface* screenSurface);
+bool loadMedia(SDL_Texture** texture, SDL_Renderer* ren);
 //Libera memoria y recursos, además de apagar SDL
 void close(SDL_Window *win);
 //CArga individualmente una imagen
 SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface);
+SDL_Texture* loadTexture(std::string path, SDL_Renderer* ren);
 int main(int argc, char** arcv)
 {
-    //Surface de la ventana
-    SDL_Surface* screenSurface = nullptr;
-    //Surface actual 
-    SDL_Surface* currentSurface = nullptr;
+    SDL_Renderer* ren = nullptr;
     SDL_Window* window = nullptr;
-    //LAs imagenes correspondientes a las teclas
-    SDL_Surface* keyPresSurfaces[KEY_PRESS_SURFACE_TOTAL];
-    window = init();
-    if(window == nullptr)
+    SDL_Texture* texture = nullptr;
+    bool isInit = init(&window, &ren);
+    std::cout<<window<<" " << ren <<std::endl;
+    if(!isInit)
     {
 	return 1;
     }
     else
     {
-	//Saca el surface	
-	screenSurface = SDL_GetWindowSurface(window);
-	bool test = loadMedia(keyPresSurfaces, screenSurface);
+	bool test = loadMedia(&texture, ren);
 	if(!test)
 	{
+	    std::cout<<"Texture nulo"<<std::endl;
 	    return 1;
 	}
 	else
@@ -51,7 +48,6 @@ int main(int argc, char** arcv)
 	    //Manejador de eventos
 	    SDL_Event e;
 	    //Surface por defecto
-	    currentSurface = keyPresSurfaces[KEY_PRESS_SURFACE_DEFAULT];
 	    //Mientras no se cierre la aplicación
 	    while(!quit)
 	    {
@@ -65,47 +61,37 @@ int main(int argc, char** arcv)
 		    }
 		   
 		}
-		//Llena el surface
-		//Stretching the surface
-		SDL_Rect stretchRect;
-		stretchRect.x = 0;
-		stretchRect.y = 0;
-		stretchRect.w = SCREEN_WIDTH;
-		stretchRect.h = SCREEN_HEIGHT;
-		SDL_BlitScaled(currentSurface, NULL, screenSurface, &stretchRect);
-		//Actualiza surface
-		SDL_UpdateWindowSurface(window);
+//Limpiando el renderer
+		SDL_RenderClear(ren);
+		//Se pinta la textura en pantalla
+		SDL_RenderCopy(ren, texture, NULL, NULL);
+		//Se muestra en pantalla
+		SDL_RenderPresent(ren);
 	    }
 	}
-	//SDL_FreeSurface(currentSurface);
-	int j = 0;
-	while(j < KEY_PRESS_SURFACE_TOTAL)
-	{
-	    SDL_FreeSurface(keyPresSurfaces[j]);
-	    j++;
-	}
+	SDL_DestroyTexture(texture);
+	SDL_DestroyRenderer(ren);
 	close(window);
 	return 0;
     }
 }
-SDL_Window* init()
+bool init(SDL_Window** win, SDL_Renderer** ren)
 {
-    SDL_Window* resp = nullptr;
     //Inicia SDL
     if(SDL_Init(SDL_INIT_VIDEO) < 0)
     {
 	std::cout<<"SDL no pudo iniciarse, SDL_Error: "<< SDL_GetError();
-	return nullptr;
+	return false;
     }
     else
     {
 	//Creando ventana
-	resp = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,SCREEN_WIDTH,SCREEN_HEIGHT,SDL_WINDOW_SHOWN);
-	if(resp == nullptr)
+	*win = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,SCREEN_WIDTH,SCREEN_HEIGHT,SDL_WINDOW_SHOWN);
+	if(*win == nullptr)
 	{
 	    std::cout<<"No se pudo crear la ventana, SDL_Error: " << SDL_GetError()<<std::endl;
 	    SDL_Quit();
-	    return nullptr;
+	    return false;
 	}
 	else
 	{
@@ -114,55 +100,39 @@ SDL_Window* init()
 	    if( !(IMG_Init(initFlags) & initFlags))
 	    {
 		std::cout<<"No se pudo cargar SDL_image, SDL_Error: " << IMG_GetError() << std::endl;
-		return nullptr;
+		return false;
 	    }
 	    else
 	    {
-		return resp;
+		*ren = SDL_CreateRenderer(*win, -1, SDL_RENDERER_ACCELERATED);
+		if(*ren == nullptr)
+		{
+		    std::cout<<"No se pudo crear el Renderer "<<SDL_GetError()<<std::endl;
+		    return false;
+		}
+		else
+		{
+		    SDL_SetRenderDrawColor(*ren, 0xFF, 0xFF, 0xFF, 0xFF);
+		    std::cout<<*win<<" "<<*ren<<std::endl;
+		    return true;
+		}
+
 	    }
 	}	
     }
 }
 //Se cargan todas las imagenes
-bool loadMedia(SDL_Surface** surfaces, SDL_Surface* screenSurface)
+bool loadMedia(SDL_Texture** texture, SDL_Renderer* ren)
 {
     //Se carga surface por defecto
     bool success =  true;
-    surfaces[KEY_PRESS_SURFACE_DEFAULT] = loadSurface("images/preview.png", screenSurface);
-    if(surfaces[KEY_PRESS_SURFACE_DEFAULT] == nullptr)
+    //Cargando textura
+    *texture = loadTexture("images/texture.png", ren);
+    if(*texture == nullptr)
     {
-	std::cout<<"No se puede cargar la imagen por defecto" <<std::endl;
+	std::cout<<"No se pudo cargar la textura: " <<std::endl;
 	success = false;
     }
-    //Cargando images para tecla arriba
-    surfaces[KEY_PRESS_SURFACE_UP] = loadSurface("images/up.bmp", screenSurface);
-    if(surfaces[KEY_PRESS_SURFACE_UP] == nullptr)
-    {
-	std::cout<<"No se puede cargar la imagen para tecla arriba " <<std::endl;
-	success = false;
-    }    
-    //Cargando imagen para tecla abajo
-    surfaces[KEY_PRESS_SURFACE_DOWN] = loadSurface("images/down.bmp", screenSurface);
-    if(surfaces[KEY_PRESS_SURFACE_DOWN] == nullptr)
-    {
-	std::cout<<"No se puede cargar la imagen para tecla abajo " <<std::endl;
-	success = false;
-    }
-    //Imagen para la izquierda
-    surfaces[KEY_PRESS_SURFACE_LEFT] = loadSurface("images/left.bmp", screenSurface);
-    if(surfaces[KEY_PRESS_SURFACE_LEFT] == nullptr)
-    {
-	std::cout<<"No se puede cargar la imagen para tecla izquierda " <<std::endl;
-	success = false;
-    }
-    //CArgando imagen para la derecha
-    surfaces[KEY_PRESS_SURFACE_RIGHT] = loadSurface("images/right.bmp", screenSurface);
-    if(surfaces[KEY_PRESS_SURFACE_RIGHT] == nullptr)
-    {
-	std::cout<<"No se puede cargar la imagen por derecha" <<std::endl;
-	success = false;
-    }
-    std::cout<<"Se han creado los surfaces? "<< success<<std::endl; 
     return success;
 }
 void close(SDL_Window* win)
@@ -194,4 +164,27 @@ SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface)
 	SDL_FreeSurface(loadedSurface);
     }
     return optimizedSurface;
+}
+SDL_Texture* loadTexture(std::string path, SDL_Renderer* ren)
+{
+    //Textura a cargar
+    SDL_Texture* newTexture = nullptr;
+    //Carga el surface del path especificado
+    SDL_Surface* loadedSurface = nullptr;
+    loadedSurface = IMG_Load(path.c_str());
+    if(loadedSurface == nullptr)
+    {
+	std::cout<<"Incapaz de abrir la imagen " << path <<" SDL Error " << IMG_GetError() << std::endl;
+    }
+    else
+    {
+	newTexture = SDL_CreateTextureFromSurface(ren, loadedSurface);
+	if(newTexture == nullptr)
+	{
+	    std::cout<<"Incapaz de crear textura "<< path <<" SDL Error: " << SDL_GetError()<<std::endl; 
+	}
+	//Liberando surface cargada
+	SDL_FreeSurface(loadedSurface);
+    }
+    return newTexture;
 }
