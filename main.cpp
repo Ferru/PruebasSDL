@@ -61,8 +61,10 @@ int main(int argc, char** arcv)
 		    }
 		   
 		}
-//Limpiando el renderer
+		//Limpiando el renderer
+		SDL_RenderDrawColor(ren, 0xFF,0xFF,0xFF,0xFF);
 		SDL_RenderClear(ren);
+		
 		//Se pinta la textura en pantalla
 		SDL_RenderCopy(ren, texture, NULL, NULL);
 		//Se muestra en pantalla
@@ -127,12 +129,12 @@ bool loadMedia(SDL_Texture** texture, SDL_Renderer* ren)
     //Se carga surface por defecto
     bool success =  true;
     //Cargando textura
-    *texture = loadTexture("images/texture.png", ren);
-    if(*texture == nullptr)
-    {
-	std::cout<<"No se pudo cargar la textura: " <<std::endl;
-	success = false;
-    }
+    //   *texture = loadTexture("images/texture.png", ren);
+//    if(*texture == nullptr)
+//    {
+//	std::cout<<"No se pudo cargar la textura: " <<std::endl;
+//	success = false;
+	//  }
     return success;
 }
 void close(SDL_Window* win)
