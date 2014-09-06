@@ -4,15 +4,6 @@
 #include <string>
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
-enum KeyPressSurfaces
-{
-    KEY_PRESS_SURFACE_DEFAULT,
-    KEY_PRESS_SURFACE_UP,
-    KEY_PRESS_SURFACE_DOWN,
-    KEY_PRESS_SURFACE_LEFT,
-    KEY_PRESS_SURFACE_RIGHT,
-    KEY_PRESS_SURFACE_TOTAL
-};
 //Inicia SDL y crea una ventana
 bool init(SDL_Window** win, SDL_Renderer** ren);
 //Carga los medios
@@ -22,7 +13,7 @@ void close(SDL_Window *win);
 //CArga individualmente una imagen
 SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface);
 SDL_Texture* loadTexture(std::string path, SDL_Renderer* ren);
-int main(int argc, char** arcv)
+int main(int argc, char** argv)
 {
     SDL_Renderer* ren = nullptr;
     SDL_Window* window = nullptr;
@@ -51,30 +42,53 @@ int main(int argc, char** arcv)
 	    //Mientras no se cierre la aplicación
 	    while(!quit)
 	    {
-		//Manejando eventos de la cola
+	    	//Manejo de eventos en la cola de eventos
 		while(SDL_PollEvent(&e) != 0)
 		{
-		    //Se detecta el evento de cierre
+		    //Evento de salida
 		    if(e.type == SDL_QUIT)
 		    {
 			quit = true;
 		    }
-		   
 		}
-		//Limpiando el renderer
-		SDL_RenderDrawColor(ren, 0xFF,0xFF,0xFF,0xFF);
+		//Limpiando screen
+		SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF,0xFF);
 		SDL_RenderClear(ren);
-		
-		//Se pinta la textura en pantalla
+		//Top left corner viewport
+		SDL_Rect topLeftViewport;
+		topLeftViewport.x = 0;
+		topLeftViewport.y = 0;
+		topLeftViewport.h = SCREEN_HEIGHT / 2;
+		topLeftViewport.w = SCREEN_WIDTH / 2;
+		SDL_RenderSetViewport(ren, &topLeftViewport);
+		//Render texture to Screen
 		SDL_RenderCopy(ren, texture, NULL, NULL);
-		//Se muestra en pantalla
+		//Top right viewport
+		SDL_Rect topRightViewport;
+		topRightViewport.x = SCREEN_WIDTH / 2;
+		topRightViewport.y = 0;
+		topRightViewport.h = SCREEN_HEIGHT / 2;
+		topRightViewport.w = SCREEN_WIDTH / 2;
+		SDL_RenderSetViewport(ren, &topRightViewport);
+		//Render texture to Screen
+		SDL_RenderCopy(ren, texture, NULL, NULL);
+		//Botom viewport
+		SDL_Rect bottomViewport;
+		bottomViewport.x = 0;
+		bottomViewport.y = SCREEN_HEIGHT / 2;
+		bottomViewport.h = SCREEN_HEIGHT / 2;
+		bottomViewport.w = SCREEN_WIDTH;
+		SDL_RenderSetViewport(ren, &bottomViewport);
+		//Render texture to screen
+		SDL_RenderCopy(ren, texture, NULL, NULL);
+		//Update screen
 		SDL_RenderPresent(ren);
 	    }
+	    SDL_DestroyTexture(texture);
+	    SDL_DestroyRenderer(ren);
+	    close(window);
+	    return 0;
 	}
-	SDL_DestroyTexture(texture);
-	SDL_DestroyRenderer(ren);
-	close(window);
-	return 0;
     }
 }
 bool init(SDL_Window** win, SDL_Renderer** ren)
@@ -123,49 +137,24 @@ bool init(SDL_Window** win, SDL_Renderer** ren)
 	}	
     }
 }
-//Se cargan todas las imagenes
 bool loadMedia(SDL_Texture** texture, SDL_Renderer* ren)
 {
     //Se carga surface por defecto
     bool success =  true;
     //Cargando textura
-    *texture = loadTexture("images/texture.png", ren);
+    *texture = loadTexture("images/viewport.png", ren);
     if(*texture == nullptr)
     {
 	std::cout<<"No se pudo cargar la textura: " <<std::endl;
 	success = false;
     }
     return success;
-} 
+}
 void close(SDL_Window* win)
 {
     SDL_DestroyWindow(win);
     win = nullptr;
     SDL_Quit();
-}
-//Optimizar la carga del surface
-SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface)
-{
-    //Surface optimizado
-    SDL_Surface* optimizedSurface = nullptr;
-    //Carga el surface del path especificado
-    SDL_Surface* loadedSurface = nullptr;
-    loadedSurface = IMG_Load(path.c_str());
-    if(loadedSurface == nullptr)
-    {
-	std::cout<<"Incapaz de abrir la imagen " << path <<" SDL Error " << IMG_GetError() << std::endl;
-    }
-    else
-    {
-	optimizedSurface = SDL_ConvertSurface(loadedSurface,screenSurface->format, 0);
-	if(optimizedSurface == nullptr)
-	{
-	    std::cout<<"Incapaz de optimizar imagen "<< path <<" SDL Error: " << SDL_GetError()<<std::endl; 
-	}
-	//Liberando surface cargada
-	SDL_FreeSurface(loadedSurface);
-    }
-    return optimizedSurface;
 }
 SDL_Texture* loadTexture(std::string path, SDL_Renderer* ren)
 {
