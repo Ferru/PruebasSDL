@@ -5,24 +5,13 @@
 #include "LTexture.hpp"
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
-enum KeyPressSurfaces
-{
-    KEY_PRESS_SURFACE_DEFAULT,
-    KEY_PRESS_SURFACE_UP,
-    KEY_PRESS_SURFACE_DOWN,
-    KEY_PRESS_SURFACE_LEFT,
-    KEY_PRESS_SURFACE_RIGHT,
-    KEY_PRESS_SURFACE_TOTAL
-};
 //Inicia SDL y crea una ventana
 bool init(SDL_Window** win, SDL_Renderer** ren);
 //Carga los medios
-bool loadMedia(SDL_Texture** texture, SDL_Renderer* ren);
+bool loadMedia(LTexture* image,LTexture* background, SDL_Renderer* ren);
 //Libera memoria y recursos, además de apagar SDL
 void close(SDL_Window *win);
 //CArga individualmente una imagen
-SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface);
-SDL_Texture* loadTexture(std::string path, SDL_Renderer* ren);
 int main(int argc, char** arcv)
 {
     SDL_Renderer* ren = nullptr;
@@ -38,7 +27,7 @@ int main(int argc, char** arcv)
     }
     else
     {
-	bool test = loadMedia(&texture, ren);
+	bool test = loadMedia(&fooTexture,&backgroundTexture, ren);
 	if(!test)
 	{
 	    std::cout<<"Texture nulo"<<std::endl;
@@ -65,16 +54,20 @@ int main(int argc, char** arcv)
 		   
 		}
 		//Limpiando el renderer
-		SDL_RenderDrawColor(ren, 0xFF,0xFF,0xFF,0xFF);
+		SDL_SetRenderDrawColor(ren, 0xFF,0xFF,0xFF,0xFF);
 		SDL_RenderClear(ren);
 		
-		//Se pinta la textura en pantalla
-		SDL_RenderCopy(ren, texture, NULL, NULL);
+		//Textura de fondo en pantalla
+		backgroundTexture.render(ren,0,0);
+		//Pintando foo a pantalla
+		fooTexture.render(ren,240,190);
 		//Se muestra en pantalla
 		SDL_RenderPresent(ren);
 	    }
 	}
-	SDL_DestroyTexture(texture);
+	//Liberando recursos
+	fooTexture.free();
+	backgroundTexture.free();
 	SDL_DestroyRenderer(ren);
 	close(window);
 	return 0;
@@ -127,24 +120,33 @@ bool init(SDL_Window** win, SDL_Renderer** ren)
     }
 }
 //Se cargan todas las imagenes
-bool loadMedia(SDL_Texture** texture, SDL_Renderer* ren)
+bool loadMedia(LTexture* image, LTexture* back, SDL_Renderer* ren)
 {
-    //Se carga surface por defecto
-    bool success =  true;
-    //Cargando textura
-    *texture = loadTexture("images/texture.png", ren);
-    if(*texture == nullptr)
+    //Loading success flag
+    bool success = true;
+    //Load 'Foo'
+    if(!image->loadFromFile("images/foo.png", ren))
     {
-	std::cout<<"No se pudo cargar la textura: " <<std::endl;
+	std::cout<<"Failed to load Foo texture image" <<std::endl;
 	success = false;
     }
-    return success;
+    else
+    {
+	if(!back->loadFromFile("images/background.png", ren))
+	{
+	    std::cout<<"Failed to load background image" << std::endl;
+	    success =false;
+	}
+    }
+	    return success;
 } 
 void close(SDL_Window* win)
 {
     SDL_DestroyWindow(win);
     win = nullptr;
+    IMG_Quit();
     SDL_Quit();
+    
 }
 //Optimizar la carga del surface
 SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface)
