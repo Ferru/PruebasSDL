@@ -5,29 +5,18 @@
 #include "LTexture.hpp"
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
-enum KeyPressSurfaces
-{
-    KEY_PRESS_SURFACE_DEFAULT,
-    KEY_PRESS_SURFACE_UP,
-    KEY_PRESS_SURFACE_DOWN,
-    KEY_PRESS_SURFACE_LEFT,
-    KEY_PRESS_SURFACE_RIGHT,
-    KEY_PRESS_SURFACE_TOTAL
-};
 //Inicia SDL y crea una ventana
 bool init(SDL_Window** win, SDL_Renderer** ren);
 //Carga los medios
-bool loadMedia(LTexture* texture, SDL_Renderer* ren, SDL_Rect** rect);
+bool loadMedia(LTexture* image, SDL_Renderer* ren, SDL_Rect (&rect)[4]);
 //Libera memoria y recursos, además de apagar SDL
 void close(SDL_Window *win);
 //CArga individualmente una imagen
-SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface);
-SDL_Texture* loadTexture(std::string path, SDL_Renderer* ren);
 int main(int argc, char** arcv)
 {
     SDL_Renderer* ren = nullptr;
     SDL_Window* window = nullptr;
-    //Scene sprites
+    //Scene Textures
     SDL_Rect spriteClips[4];
     LTexture spriteSheetTexture;
     bool isInit = init(&window, &ren);
@@ -38,7 +27,7 @@ int main(int argc, char** arcv)
     }
     else
     {
-	bool test = loadMedia(&spriteSheetTexture, ren, &spriteClips);
+	bool test = loadMedia(&spriteSheetTexture, ren, spriteClips);
 	if(!test)
 	{
 	    std::cout<<"Texture nulo"<<std::endl;
@@ -65,21 +54,25 @@ int main(int argc, char** arcv)
 		   
 		}
 		//Limpiando el renderer
-		SDL_RenderDrawColor(ren, 0xFF,0xFF,0xFF,0xFF);
+		SDL_SetRenderDrawColor(ren, 0xFF,0xFF,0xFF,0xFF);
 		SDL_RenderClear(ren);
+		std::cout<<spriteClips[0].h<<std::endl;
+		
 		//Pintando sprite superior izquierdo
-		spriteSheetTexture.render(ren, 0,0,spriteClips[0]);
+		spriteSheetTexture.render(ren, 0,0,&spriteClips[0]);
 		//Pintando sprite superior derecho
-		spriteSheetTexture.render(ren, SCREEN_WIDTH - spriteClips[1].w, 0,spriteClips[1]);
+		spriteSheetTexture.render(ren, SCREEN_WIDTH - spriteClips[1].w, 0,&spriteClips[1]);
 		//Pintando sprite inferior izquierdo
-		spriteSheetTexture.render(ren, 0, SCREEN_HEIGHT - spriteClips[2].h, spriteClips[2]);
+		spriteSheetTexture.render(ren, 0, SCREEN_HEIGHT - spriteClips[2].h, &spriteClips[2]);
 		//Pintando spriet inferior derecho
-		spriteSheetTexture.render(ren, SCREEN_WIDTH - spriteClips[3].w, SCREEN_HEIGHT - spriteClips[3].h, spriteClips[3]);
-		//Actualizar pantalla
+		spriteSheetTexture.render(ren, SCREEN_WIDTH - spriteClips[3].w, SCREEN_HEIGHT - spriteClips[3].h, &spriteClips[3]);
+
+		//Se muestra en pantalla
 		SDL_RenderPresent(ren);
 	    }
 	}
-	SDL_DestroyTexture(texture);
+	//Liberando recursos
+	spriteSheetTexture.free();
 	SDL_DestroyRenderer(ren);
 	close(window);
 	return 0;
@@ -132,7 +125,7 @@ bool init(SDL_Window** win, SDL_Renderer** ren)
     }
 }
 //Se cargan todas las imagenes
-bool loadMedia(LTexture* texture, SDL_Renderer* ren, SDL_Rect** rect)
+bool loadMedia(LTexture* texture, SDL_Renderer* ren, SDL_Rect (&rect)[4])
 {
     //Se carga surface por defecto
     bool success =  true;
@@ -145,33 +138,37 @@ bool loadMedia(LTexture* texture, SDL_Renderer* ren, SDL_Rect** rect)
     else
     {
 	//SEt top left sprite
-	spriteClips*[0].x = 0;
-	spriteClips*[0].y = 0;
-	spriteClips*[0].w = 100;
-	spriteClips*[0].h = 100;
+	rect[0].x = 0;
+	rect[0].y = 0;
+	rect[0].w = 100;
+	rect[0].h = 100;
 	//Set top right sprite
-	spriteClips*[1].x = 100;
-	spriteClips*[1].y = 0;
-	spriteClips*[1].w = 100;
-	spriteClips*[1].h = 100;
+	rect[1].x = 100;
+	rect[1].y = 0;
+	rect[1].w = 100;
+	rect[1].h = 100;
 	//Set bottom left sprite
-	spriteClips*[2].x = 0;
-	spriteClips*[2].y = 100;
-	spriteClips*[2].w = 100;
-	spriteClips*[2].h = 100;
+	rect[2].x = 0;
+	rect[2].y = 100;
+	rect[2].w = 100;
+	rect[2].h = 100;
 	//Set bottom right sprite
-	spriteClips*[3].x = 100;
-	spriteClips*[3].y = 100;
-	spriteClips*[3].w = 100;
-	spriteClips*[3].h = 100;
+	rect[3].x = 100;
+	rect[3].y = 100;
+	rect[3].w = 100;
+	rect[3].h = 100;
     }
     return success;
+
+    
 } 
 void close(SDL_Window* win)
 {
     SDL_DestroyWindow(win);
     win = nullptr;
+    IMG_Quit();
     SDL_Quit();
+    
 }
 //Optimizar la carga del surface
 SDL_Surface* loadSurface(std::string path, SDL_Surface* screenSurface)
