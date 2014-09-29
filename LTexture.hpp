@@ -13,7 +13,8 @@ public:
     bool loadFromFile(std::string path2, SDL_Renderer* ren);
     //Libera recursos
     void free();
-    //Renders texture at given point
+    //Set color modulation
+    void setColor(Uint8 red, Uint8 green, Uint8 blue);    //Renders texture at given point
     void render(SDL_Renderer* ren, int x, int y, SDL_Rect* clip = NULL);
     //Obtiene las dimensiones de la imagen
     int getWidth();

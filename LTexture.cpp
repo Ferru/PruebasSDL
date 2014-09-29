@@ -84,3 +84,8 @@ int LTexture::getHeight()
 {
     return mHeight;
 }
+void LTexture::setColor(Uint8 red, Uint8 green, Uint8 blue)
+{
+    //Modulate texture
+    SDL_SetTextureColorMod(mTexture, red, green, blue);
+}
