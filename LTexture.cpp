@@ -21,6 +21,8 @@ bool LTexture::loadFromFile(std::string path, SDL_Renderer* ren)
 {
     //Se eliminan texturas ya existentes
     free();
+    //the renderer
+    this->setRenderer(ren);
     //the final texture
     SDL_Texture* newTexture = nullptr;
     //Se carga la imagen
@@ -63,7 +65,7 @@ void LTexture::free()
 	mHeight = 0;
     }
 }
-void LTexture::render(SDL_Renderer* ren, int x, int y, SDL_Rect* clip)
+void LTexture::render(int x, int y, SDL_Rect* clip)
 {
     //Set rendering space and rendering to screen
     SDL_Rect renderQuad = {x, y, mWidth, mHeight};
@@ -88,4 +90,18 @@ void LTexture::setColor(Uint8 red, Uint8 green, Uint8 blue)
 {
     //Modulate texture
     SDL_SetTextureColorMod(mTexture, red, green, blue);
+}
+void LTexture::setBlendMode(SDL_BlendMode blending)
+{
+    //Set Blending function
+    SDL_SetTextureBlendMode(mTexture, blending);
+}
+void LTexture::setAlpha(Uint8 alpha)
+{
+    //Modulat texture alpha
+    SDL_SetTextureAlphaMod(mTexture, alpha);
+}
+void LTexture::setRenderer(SDL_Renderer* render)
+{
+    ren = render;
 }

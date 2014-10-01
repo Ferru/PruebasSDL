@@ -4,8 +4,8 @@ CFLAGS = -Wall -std=c++11
 LDFLAGS = ${SDL_LIB}
 EXE = sdlTest
 
-sdlTest:lTexture.o colorMod.cpp
-	${CC} colorMod.cpp ${CFLAGS} ${LDFLAGS} -o ${EXE} lTexture.o
+sdlTest:lTexture.o alpha.cpp
+	${CC} alpha.cpp ${CFLAGS} ${LDFLAGS} -o ${EXE} lTexture.o
 lTexture.o:LTexture.cpp LTexture.hpp
 	${CC} LTexture.cpp ${CFLAGS} ${LDFLAGS} -c -o lTexture.o
 clean:

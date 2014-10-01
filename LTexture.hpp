@@ -15,13 +15,21 @@ public:
     void free();
     //Set color modulation
     void setColor(Uint8 red, Uint8 green, Uint8 blue);    //Renders texture at given point
-    void render(SDL_Renderer* ren, int x, int y, SDL_Rect* clip = NULL);
+    //Set blending
+    void setBlendMode( SDL_BlendMode blending);
+    //Set alpha modulation
+    void setAlpha(Uint8 alpha);
+    //Dibuja en pantalla
+    void render(int x, int y, SDL_Rect* clip = NULL);
+    //para modificar renderer
+    void setRenderer(SDL_Renderer* render);
     //Obtiene las dimensiones de la imagen
     int getWidth();
     int getHeight();
 private:
     //La textura 
     SDL_Texture* mTexture;
+    SDL_Renderer* ren;
     //Dimensiones de la imagen
     int mWidth;
     int mHeight;
