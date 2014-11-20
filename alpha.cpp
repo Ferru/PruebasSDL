@@ -8,7 +8,7 @@ const int SCREEN_HEIGHT = 480;
 //Inicia SDL y crea una ventana
 bool init(SDL_Window** win, SDL_Renderer** ren);
 //Carga los medios 
-bool loadMedia(LTexture* texture,LTexture* backGround, SDL_Renderer* ren);
+bool loadMedia(LTexture* texture, SDL_Renderer* ren);
 //Libera memoria y recursos, además de apagar SDL
 void close(SDL_Window *win);
 //CArga individualmente una imagen
@@ -17,8 +17,7 @@ int main(int argc, char** arcv)
     SDL_Renderer* ren = nullptr;
     SDL_Window* window = nullptr;
     //Scene Textures
-    LTexture backgroundTexture;
-    LTexture frontTexture;
+    LTexture arrowTexture;
     bool isInit = init(&window, &ren);
     std::cout<<window<<" " << ren <<std::endl;
     if(!isInit)
@@ -27,7 +26,7 @@ int main(int argc, char** arcv)
     }
     else
     {
-	bool test = loadMedia(&frontTexture, &backgroundTexture, ren);
+	bool test = loadMedia(&arrowTexture, ren);
 	if(!test)
 	{
 	    std::cout<<"Texture nulo"<<std::endl;
@@ -45,6 +44,10 @@ int main(int argc, char** arcv)
 	    Uint8 g = 255;
 	    Uint8 b = 255;
 	    Uint8 a = 255;
+	    //Angle of rotation
+	    double degrees = 0;
+	    //Flip type
+	    SDL_RendererFlip flipType = SDL_FLIP_NONE;
 	    //Mientras no se cierre la aplicación
 	    while(!quit)
 	    {
@@ -98,26 +101,40 @@ int main(int argc, char** arcv)
 				a -= 32;
 			    }
 			    break;
+			case SDLK_r:
+			    degrees -= 60;
+			    break;
+			case SDLK_l:
+			    degrees += 60;
+			    break;
+			case SDLK_h:
+			    flipType = SDL_FLIP_HORIZONTAL;
+			    break;
+			case SDLK_z:
+			    flipType = SDL_FLIP_NONE;
+			    break;
+			case SDLK_v:
+			    flipType = SDL_FLIP_VERTICAL;
+			    break;  
+			    
 			}
+		    
+			
 		    }
 		   
 		}
 		//Limpiando el renderer
 		SDL_SetRenderDrawColor(ren, 0xFF,0xFF,0xFF,0xFF);
 		SDL_RenderClear(ren);
-		//Pintando background
-		backgroundTexture.render(0,0);
 		//Pintando frente
-		frontTexture.setColor(r,g,b);
-		frontTexture.setAlpha(a);
-		frontTexture.render(0,0);
-		//Se muestra en pantalla
+		arrowTexture.setColor(r,g,b);
+		arrowTexture.setAlpha(a);
+		arrowTexture.render((SCREEN_WIDTH - arrowTexture.getWidth())/2, (SCREEN_HEIGHT - arrowTexture.getHeight())/2, NULL, degrees, NULL,flipType);
 		SDL_RenderPresent(ren);
 	    }
 	}
 	//Liberando recursos
-	frontTexture.free();
-	backgroundTexture.free();
+	arrowTexture.free();
 	SDL_DestroyRenderer(ren);
 	close(window);
 	return 0;
@@ -170,12 +187,12 @@ bool init(SDL_Window** win, SDL_Renderer** ren)
     }
 }
 //Se cargan todas las imagenes
-bool loadMedia(LTexture* texture, LTexture* backGround, SDL_Renderer* ren)
+bool loadMedia(LTexture* texture, SDL_Renderer* ren)
 {
     //Se carga surface por defecto
     bool success =  true;
     //Cargando textura
-    if(!texture->loadFromFile("images/fadeout.png", ren))
+    if(!texture->loadFromFile("images/pointer.png", ren))
     {
 	std::cout<<"No se pudo cargar la textura: " <<std::endl;
 	success = false;
@@ -183,11 +200,6 @@ bool loadMedia(LTexture* texture, LTexture* backGround, SDL_Renderer* ren)
     else
     {
 	texture->setBlendMode(SDL_BLENDMODE_BLEND);
-	if(!backGround->loadFromFile("images/fadein.png", ren))
-	{
-	    std::cout<<"Fallo cargando textura de fondo"<<std::endl;
-	    success = false;
-	}
     }
     return success;
 } 

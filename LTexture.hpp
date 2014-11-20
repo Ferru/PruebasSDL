@@ -20,7 +20,7 @@ public:
     //Set alpha modulation
     void setAlpha(Uint8 alpha);
     //Dibuja en pantalla
-    void render(int x, int y, SDL_Rect* clip = NULL);
+    void render(int x, int y, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
     //para modificar renderer
     void setRenderer(SDL_Renderer* render);
     //Obtiene las dimensiones de la imagen
