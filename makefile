@@ -1,5 +1,5 @@
 CC = g++
-SDL_LIB = ${shell sdl2-config --libs} -lSDL2_image
+SDL_LIB = ${shell sdl2-config --libs} -lSDL2_image -lSDL2_ttf
 SDL_FLAGS = ${shell sdl2-config --cflags}
 CFLAGS = -Wall -std=c++11 ${SDL_FLAGS}
 LDFLAGS = ${SDL_LIB}
