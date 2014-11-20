@@ -1,5 +1,5 @@
 #include <string>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #ifndef LTEXTURE_TEST
 #define LTEXTURE_TEST
 class LTexture

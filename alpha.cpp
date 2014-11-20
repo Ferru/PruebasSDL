@@ -1,6 +1,6 @@
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include <iostream>
-#include <SDL2/SDL_image.h>
+#include "SDL_image.h"
 #include <string>
 #include "LTexture.hpp"
 const int SCREEN_WIDTH = 640;
